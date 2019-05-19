@@ -2,3 +2,5 @@ flask
 gunicorn
 gpiozero
 flask-sqlalchemy
+passlib
+flask-login

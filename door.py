@@ -32,7 +32,7 @@ class History(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user = db.Column(db.String)
     method = db.Column(db.String)
-    date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    date = db.Column(db.DateTime, default=datetime.datetime.now)
 
     timef = '%m/%d, %H:%M:%S'
 
