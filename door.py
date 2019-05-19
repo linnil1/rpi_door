@@ -1,4 +1,4 @@
-# from gpiozero import Button, LED
+from gpiozero import Button, LED
 import time
 import datetime
 from flask_sqlalchemy import SQLAlchemy
@@ -7,23 +7,15 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 # on off open
 state = 'off'
-# set_relay = LED(4)
+set_relay = LED(4)
 
 
 def set_on():
-    state = 'on'
     set_relay.on()
 
 
 def set_off():
-    state = 'off'
     set_relay.off()
-
-
-def doorOpen():
-    # set_on()
-    time.sleep(1)
-    # set_off()
 
 
 class History(db.Model):
@@ -37,12 +29,35 @@ class History(db.Model):
     timef = '%m/%d, %H:%M:%S'
 
     def __repr__(self):
-        return f'{self.user} {self.method} at {self.date.strftime(self.timef)}'
+        return '{} {} at {}'.format(
+            self.user, self.method, self.date.strftime(self.timef))
 
 
 def add(user, method):
+    print(user, method)
+    global state
+    if method == 'open':
+        if state == 'on':
+            return False
+        set_on()
+        time.sleep(1)
+        set_off()
+
+    elif method in ['on', 'off']:
+        if method == state:
+            return False
+        state = method
+        if method == 'on':
+            set_on()
+        else:
+            set_off()
+
+    else:
+        return False
+
     db.session.add(History(user=user, method=method))
     db.session.commit()
+    return True
 
 
 def show(limit=5):

@@ -34,13 +34,31 @@ def main():
     return render_template('index.html', op_str=door.show())
 
 
+@socketio.on('connect', namespace='/')
+@authenticated_only
+def connect(data={}):
+    print('connect', flask_login.current_user.name)
+    socketio.emit('state', {
+        'onoff': door.state == 'on'})
+
+
 @socketio.on('open', namespace='/')
 @authenticated_only
 def doorOpen(data={}):
-    print('open')
-    door.add(flask_login.current_user.name, 'open')
-    socketio.emit('history', {
-        'history': [str(d) for d in door.show(limit=5)]})
+    if door.add(flask_login.current_user.name, 'open'):
+        socketio.emit('history', {
+            'history': [str(d) for d in door.show(limit=5)]})
+
+
+@socketio.on('onoff', namespace='/')
+@authenticated_only
+def doorOnOff(data):
+    method = 'on' if data['onoff'] else 'off'
+    if door.add(flask_login.current_user.name, method):
+        socketio.emit('state', {
+            'onoff': door.state == 'on'})
+        socketio.emit('history', {
+            'history': [str(d) for d in door.show(limit=5)]})
 
 
 if __name__ == '__main__':
