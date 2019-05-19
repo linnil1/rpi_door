@@ -4,3 +4,4 @@ gpiozero
 flask-sqlalchemy
 passlib
 flask-login
+flask-socketio

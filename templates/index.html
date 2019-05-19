@@ -6,14 +6,17 @@
 
   <div id="main" class="w-100 align-self-center d-flex flex-column align-items-center">
     <h1>Door</h1>
-    <form method="post" action="/open">
-        <button id="open" name="singlebutton" class="btn btn-primary">Click me to Open!</button> 
-    </form>
+    <button id="open" name="singlebutton" class="btn btn-primary" onclick="doorOpen()">Click me to Open!</button> 
   </div>
-  <div id="comment" class="w-100 align-self-end d-flex flex-column align-items-center">
+  <div id="history" class="w-100 align-self-end d-flex flex-column align-items-center">
     {% for s in op_str %}
     <p class="m-0">{{s}}</p>
     {% endfor %}
+    <div id="disconnect" class="alert alert-danger" role="alert">
+      You are disconnectted from server. Click 
+      <a href="{{ url_for('main') }}"> here </a>
+      to try to login again
+    </div>
   </div>
 </div>
 
@@ -31,5 +34,41 @@ function showTime(){
   setTimeout(showTime, 1000);
 }
 showTime();
+
+var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+socket.on('connect', function () {
+    document.querySelector("#disconnect").hidden = 'True';
+});
+
+socket.on('disconnect', function () {
+    console.log("Disconnected from the server");
+    document.querySelector("#disconnect").hidden = null;
+});
+
+socket.on('history', function(data) {
+    console.log(data);
+    var hisdiv = document.querySelector('#history');
+    
+    // remove
+    var hisp = hisdiv.querySelectorAll('p');
+    for (var i=0; i<hisp.length; i++)
+        hisdiv.removeChild(hisp[i]);
+
+    // add
+    for (var i=0; i<data.history.length; i++) {
+        var p = document.createElement("p");
+        p.className += "m-0";
+        p.textContent = data.history[i];
+        hisdiv.appendChild(p);
+        console.log(p);
+    }
+});
+
+function doorOpen(){
+    console.log('123');
+    socket.emit('open', {});
+}
+
 </script>
 {% endblock %}
