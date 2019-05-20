@@ -1,7 +1,9 @@
 flask
-gunicorn
 gpiozero
 flask-sqlalchemy
 passlib
 flask-login
 flask-socketio
+gunicorn
+eventlet
+werkzeug

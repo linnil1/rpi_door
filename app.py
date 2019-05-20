@@ -4,18 +4,21 @@ import login
 import flask_login
 from flask_socketio import SocketIO, disconnect
 import functools
+from werkzeug.contrib.fixers import ProxyFix
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///./tmp.sqlite'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SESSION_COOKIE_NAME'] = 'door'
 app.config['SECRET_KEY'] = '123'
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+app.register_blueprint(login.bp, url_prefix='')
+socketio = SocketIO(app)
+login.login_manager.init_app(app)
 with app.app_context():
     door.db.init_app(app)
     door.db.create_all()
-    login.login_manager.init_app(app)
-    app.register_blueprint(login.bp, url_prefix='')
-    socketio = SocketIO(app)
 
 
 def authenticated_only(f):
@@ -28,7 +31,7 @@ def authenticated_only(f):
     return wrapped
 
 
-@app.route("/")
+@app.route('/')
 @flask_login.login_required
 def main():
     return render_template('index.html', op_str=door.show())
